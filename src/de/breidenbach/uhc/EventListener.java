@@ -2,6 +2,7 @@ package de.breidenbach.uhc;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -36,28 +37,26 @@ public class EventListener implements Listener {
             }else{
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " STARTING" + ChatColor.RESET + " - " + ChatColor.BOLD + "Join now to participate!");
             }
-        }else{
+        }else {
+            if (game.finished) {
+                event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " FINISHED" + ChatColor.RESET + " - " + ChatColor.BOLD + "Please ask an operator to start a new game!");
+            } else {
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " INITIALIZING" + ChatColor.RESET + " - " + ChatColor.BOLD + "Initializing, please wait...");
+            }
         }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
         if(game.active) {
-            if(game.started){
-                event.getPlayer().setGameMode(GameMode.SPECTATOR);
-            }else{
-                game.addPlayer(event.getPlayer());
-
-            }
+            game.handlePlayerJoin(event.getPlayer());
         }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event){
         if(game.active) {
-            game.killPlayer(event.getPlayer(), "leaving");
-            System.out.println(event.getPlayer().getName() + " left and is disqualified.");
+            game.handlePlayerLeave(event.getPlayer());
         }
     }
 

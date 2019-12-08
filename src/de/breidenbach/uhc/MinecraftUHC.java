@@ -35,15 +35,21 @@ public class MinecraftUHC extends JavaPlugin {
                     switch (args[0]) {
                         case "init":
                             game.init(sender.getServer());
-                            break;
+                            return true;
                         case "start":
-                            game.start(sender.getServer());
-                            break;
+                            if(sender.getServer().getOnlinePlayers().size() > 1) {
+                                game.start(sender.getServer());
+                            }else{
+                                sender.sendMessage("At least 2 players are needed to start!");
+                            }
+                            return true;
+                        default:
+                            return false;
                     }
                 } else {
                     sender.sendMessage("UHC " + VERSION + " loaded.");
+                    return true;
                 }
-                return true;
             }else{
                 sender.sendMessage(ChatColor.RED + "UHC-Settings can only accessed by an operator!");
                 return true;

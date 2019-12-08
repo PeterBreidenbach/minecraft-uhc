@@ -26,19 +26,33 @@ public class Game {
     }
 
     public void init(Server server){
-        server.getWorlds().get(0).getWorldBorder().setCenter(0,0);
+        server.getWorlds().get(0).getWorldBorder().setCenter(0, 0);
         server.getWorlds().get(0).getWorldBorder().setSize(10);
+        server.getWorlds().get(0).setPVP(false);
         server.setWhitelist(false);
         active = true;
     }
 
     public void start(Server server){
-        server.getWorlds().get(0).getWorldBorder().setSize(10);
-
+        server.getWorlds().get(0).getWorldBorder().setSize(200);
+//        server.getScheduler().runTaskLaterAsynchronously(plugin, () -> {}, )
+        started = true;
     }
 
-    public void addPlayer(Player p){
-        alivePlayers.add(p);
+    public void handlePlayerJoin(Player p){
+        if(started) {
+            p.teleport(new Location(p.getWorld(), 0, p.getWorld().getHighestBlockYAt(0,0),0));
+        }else{
+            alivePlayers.add(p);
+        }
+    }
+
+    public void handlePlayerLeave(Player p){
+        if(started){
+            if(alivePlayers.remove(p)){
+                killPlayer(p, "leaving");
+            }
+        }
     }
 
     public void checkForWinner(){
