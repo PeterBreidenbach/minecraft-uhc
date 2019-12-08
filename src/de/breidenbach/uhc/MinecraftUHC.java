@@ -1,17 +1,12 @@
 package de.breidenbach.uhc;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MinecraftUHC extends JavaPlugin {
 
     public static final String VERSION = "INDEV 1.0";
-
-    private boolean matchSetup;
-    private boolean matchStarted;
 
     @Override
     public void onLoad(){
@@ -20,7 +15,8 @@ public class MinecraftUHC extends JavaPlugin {
 
     @Override
     public void onEnable(){
-        System.out.printf("UHC %s enabled", VERSION);
+        this.getServer().getPluginManager().registerEvents(new EventListener(), this);
+        System.out.println("UHC " + VERSION + " enabled");
     }
 
     @Override
@@ -30,13 +26,20 @@ public class MinecraftUHC extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
-        switch(label.toLowerCase()){
-            case "setup":
-                break;
-            case "start":
-                break;
-            case "stop":
-                break;
+        if(label.equalsIgnoreCase("uhc") && sender.isOp()){
+            if(args.length > 0){
+                switch(args[0]){
+                    case "init":
+                        Game.init();
+                        break;
+                    case "start":
+                        Game.start();
+                        break;
+                }
+            }else{
+                sender.sendMessage("UHC " + VERSION + " loaded.");
+            }
+            return true;
         }
         return false;
     }

@@ -4,12 +4,6 @@ version: 1.0
 author: Peter Breidenbach
 
 commands:
-  setup:
+  uhc:
     description: Set up the Server for a UHC match
-    usage: /<command>
-  start:
-    description: Start the match
-    usage: /<command>
-  stop:
-    description: Cancels a match
-    usage: /<command>
+    usage: /<command> {start | setup}
