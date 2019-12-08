@@ -15,32 +15,60 @@ import java.util.stream.Collectors;
 
 public class Game {
     public boolean active;
+    public boolean countdownStarted;
     public boolean started;
     public boolean finished;
     public List<Player> alivePlayers;
     private JavaPlugin plugin;
+    private int timerSchedule;
+    private int timerValue;
 
     public Game(JavaPlugin plugin) {
         this.plugin = plugin;
         this.alivePlayers = new ArrayList<>();
     }
 
-    public void init(Server server){
-        server.getWorlds().get(0).getWorldBorder().setCenter(0, 0);
-        server.getWorlds().get(0).getWorldBorder().setSize(10);
-        server.getWorlds().get(0).setPVP(false);
-        server.setWhitelist(false);
+    public void init(){
+        World overworld = plugin.getServer().getWorlds().get(0);
+        overworld.getWorldBorder().setCenter(0, 0);
+        overworld.getWorldBorder().setSize(10);
+        overworld.setPVP(false);
+        plugin.getServer().setWhitelist(false);
         active = true;
     }
 
-    public void start(Server server){
-        server.getWorlds().get(0).getWorldBorder().setSize(200);
-        server.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-            server.getWorlds().get(0).setPVP(true);
-            server.broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
-            server.getWorlds().get(0).getWorldBorder().setSize(20, 10);
-        }, 1200);
-        started = true;
+    public void start(){
+        countdownStarted = true;
+        timerValue = 60;
+        timerSchedule = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            switch (timerValue){
+                case 60:
+                case 30:
+                case 10:
+                case 5:
+                case 4:
+                case 3:
+                case 2:
+                case 1:
+                    plugin.getServer().getWorlds().get(0).getPlayers().forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_BASS, 1.0f, 2.0f));
+                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + timerValue + ChatColor.RESET + " seconds until the match begins");
+                    break;
+                case 0:
+                    plugin.getServer().getWorlds().get(0).getPlayers().forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_PLING, 2.0f, 2.0f));
+                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " PVP will activate in 15 minutes!");
+                    plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(300);
+                    plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+                        plugin.getServer().getWorlds().get(0).setPVP(true);
+                        plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
+                        plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(20, 10*60);
+                    }, 15*60*20);
+                    plugin.getServer().getScheduler().cancelTask(timerSchedule);
+                    countdownStarted = false;
+                    started = true;
+                    break;
+            }
+            timerValue--;
+        }, 0, 20);
     }
 
     public void handlePlayerJoin(Player p){
@@ -51,8 +79,17 @@ public class Game {
     }
 
     public void handlePlayerLeave(Player p){
-        if(started){
-            killPlayer(p, "leaving");
+        if(countdownStarted){
+            alivePlayers.remove(p);
+            if(alivePlayers.size() < 2) {
+                plugin.getServer().getScheduler().cancelTask(timerSchedule);
+                plugin.getServer().broadcastMessage(ChatColor.RED + "Start abort, not enough players!");
+                countdownStarted = false;
+            }
+            }else {
+            if (started) {
+                killPlayer(p, "leaving");
+            }
         }
     }
 

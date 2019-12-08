@@ -63,11 +63,15 @@ public class EventListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerDamage(EntityDamageEvent event){
         if(game.active) {
-            if (event.getEntityType() == EntityType.PLAYER) {
-                Player p = (Player) event.getEntity();
-                if (p.getHealth() - event.getDamage() <= 0) {
-                    game.killPlayer(p, event.getCause().name());
-                    event.setCancelled(true);
+            if(!game.started){
+                event.setCancelled(true);
+            }else{
+                if (event.getEntityType() == EntityType.PLAYER) {
+                    Player p = (Player) event.getEntity();
+                    if (p.getHealth() - event.getDamage() <= 0) {
+                        game.killPlayer(p, event.getCause().name());
+                        event.setCancelled(true);
+                    }
                 }
             }
         }

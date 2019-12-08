@@ -34,13 +34,21 @@ public class MinecraftUHC extends JavaPlugin {
                 if (args.length > 0) {
                     switch (args[0]) {
                         case "init":
-                            game.init(sender.getServer());
+                            game.init();
                             return true;
                         case "start":
-                            if(game.alivePlayers.size() > 1 && game.active) {
-                                game.start(sender.getServer());
+                            if(game.active) {
+                                if(!game.countdownStarted && !game.started) {
+                                    if (game.alivePlayers.size() > 1) {
+                                        game.start();
+                                    } else {
+                                        sender.sendMessage("At least 2 players are needed to start!");
+                                    }
+                                }else{
+                                    sender.sendMessage("Game already started!");
+                                }
                             }else{
-                                sender.sendMessage("At least 2 players are needed to start!");
+                                sender.sendMessage("Please run \"/uhc init\" first!");
                             }
                             return true;
                         default:
