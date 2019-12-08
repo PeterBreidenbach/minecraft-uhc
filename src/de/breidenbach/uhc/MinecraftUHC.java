@@ -37,7 +37,7 @@ public class MinecraftUHC extends JavaPlugin {
                             game.init(sender.getServer());
                             return true;
                         case "start":
-                            if(sender.getServer().getOnlinePlayers().size() > 1) {
+                            if(game.alivePlayers.size() > 1 && game.active) {
                                 game.start(sender.getServer());
                             }else{
                                 sender.sendMessage("At least 2 players are needed to start!");

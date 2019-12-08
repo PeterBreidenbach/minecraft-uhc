@@ -17,7 +17,7 @@ public class Game {
     public boolean active;
     public boolean started;
     public boolean finished;
-    private List<Player> alivePlayers;
+    public List<Player> alivePlayers;
     private JavaPlugin plugin;
 
     public Game(JavaPlugin plugin) {
@@ -35,23 +35,24 @@ public class Game {
 
     public void start(Server server){
         server.getWorlds().get(0).getWorldBorder().setSize(200);
-//        server.getScheduler().runTaskLaterAsynchronously(plugin, () -> {}, )
+        server.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+            server.getWorlds().get(0).setPVP(true);
+            server.broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
+            server.getWorlds().get(0).getWorldBorder().setSize(20, 10);
+        }, 1200);
         started = true;
     }
 
     public void handlePlayerJoin(Player p){
-        if(started) {
-            p.teleport(new Location(p.getWorld(), 0, p.getWorld().getHighestBlockYAt(0,0),0));
-        }else{
+        p.teleport(new Location(p.getWorld(), 0, p.getWorld().getHighestBlockYAt(0,0),0));
+        if(!started) {
             alivePlayers.add(p);
         }
     }
 
     public void handlePlayerLeave(Player p){
         if(started){
-            if(alivePlayers.remove(p)){
-                killPlayer(p, "leaving");
-            }
+            killPlayer(p, "leaving");
         }
     }
 
@@ -71,19 +72,13 @@ public class Game {
 
     public void killPlayer(Player p, String damageCause){
         p.getWorld().strikeLightningEffect(p.getLocation());
-        for(ItemStack stack: Arrays.stream(p.getInventory().getContents()).filter(s -> Objects.nonNull(s) && s.getType() != Material.AIR).collect(Collectors.toList())){
-            p.getWorld().dropItemNaturally(p.getLocation(), stack);
-        }
-        for(ItemStack stack: Arrays.stream(p.getInventory().getArmorContents()).filter(s -> Objects.nonNull(s) && s.getType() != Material.AIR).collect(Collectors.toList())){
-            p.getWorld().dropItemNaturally(p.getLocation(), stack);
-        }
+        Arrays.stream(p.getInventory().getContents()).filter(s -> Objects.nonNull(s) && s.getType() != Material.AIR).forEach(x -> p.getWorld().dropItemNaturally(p.getLocation(), x));
+        Arrays.stream(p.getInventory().getArmorContents()).filter(s -> Objects.nonNull(s) && s.getType() != Material.AIR).forEach(x -> p.getWorld().dropItemNaturally(p.getLocation(), x));
         p.setVelocity(new Vector(0.0f, 10.0f, 0.0f));
         p.setGameMode(GameMode.SPECTATOR);
         p.getInventory().clear();
         p.setHealth(p.getMaxHealth());
-        for(Player onlinePlayer : p.getServer().getOnlinePlayers().stream().filter(i -> i != p).collect(Collectors.toList())){
-            onlinePlayer.sendMessage(ChatColor.RED + p.getName() + " died!");
-        }
+        p.getServer().getOnlinePlayers().stream().filter(i -> i != p).forEach(x -> x.sendMessage(ChatColor.RED + p.getName() + " died!"));
         p.sendMessage(ChatColor.RED + "You where killed by " + damageCause + "!");
         if(alivePlayers.remove(p)){
             checkForWinner();
