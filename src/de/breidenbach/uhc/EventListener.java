@@ -22,10 +22,16 @@ import java.util.stream.Collectors;
 
 public class EventListener implements Listener {
 
+    private Game game;
+
+    public EventListener(Game game) {
+        this.game = game;
+    }
+
     @EventHandler
     public void onServerListPing(ServerListPingEvent event){
-        if(Game.active){
-            if(Game.started){
+        if(game.active){
+            if(game.started){
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " RUNNING" + ChatColor.RESET  + " - " + ChatColor.BOLD + "Join now to spectate!");
             }else{
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " STARTING" + ChatColor.RESET + " - " + ChatColor.BOLD + "Join now to participate!");
@@ -37,11 +43,11 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
-        if(Game.active) {
-            if(Game.started){
+        if(game.active) {
+            if(game.started){
                 event.getPlayer().setGameMode(GameMode.SPECTATOR);
             }else{
-                Game.addPlayer(event.getPlayer());
+                game.addPlayer(event.getPlayer());
 
             }
         }
@@ -49,19 +55,19 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event){
-        if(Game.active) {
-            Game.killPlayer(event.getPlayer(), "leaving");
+        if(game.active) {
+            game.killPlayer(event.getPlayer(), "leaving");
             System.out.println(event.getPlayer().getName() + " left and is disqualified.");
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerDamage(EntityDamageEvent event){
-        if(Game.active) {
+        if(game.active) {
             if (event.getEntityType() == EntityType.PLAYER) {
                 Player p = (Player) event.getEntity();
                 if (p.getHealth() - event.getDamage() <= 0) {
-                    Game.killPlayer(p, event.getCause().name());
+                    game.killPlayer(p, event.getCause().name());
                     event.setCancelled(true);
                 }
             }
