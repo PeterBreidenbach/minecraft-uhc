@@ -1,9 +1,7 @@
 package de.breidenbach.uhc;
 
 import org.bukkit.*;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
@@ -20,8 +18,10 @@ public class Game {
     public boolean finished;
     public List<Player> alivePlayers;
     private JavaPlugin plugin;
-    private int timerSchedule;
-    private int timerValue;
+    private int countDownTimerAddress;
+    private int matchTimerAddress;
+    private int countDownTimerValue;
+    private int matchTimerValue;
 
     public Game(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -30,6 +30,7 @@ public class Game {
 
     public void init(){
         World overworld = plugin.getServer().getWorlds().get(0);
+        fillSpawn(overworld, Material.GLASS);
         overworld.getWorldBorder().setCenter(0, 0);
         overworld.getWorldBorder().setSize(10);
         overworld.setPVP(false);
@@ -39,9 +40,9 @@ public class Game {
 
     public void start(){
         countdownStarted = true;
-        timerValue = 60;
-        timerSchedule = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-            switch (timerValue){
+        countDownTimerValue = 60;
+        countDownTimerAddress = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            switch (countDownTimerValue){
                 case 60:
                 case 30:
                 case 10:
@@ -51,23 +52,24 @@ public class Game {
                 case 2:
                 case 1:
                     plugin.getServer().getWorlds().get(0).getPlayers().forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_BASS, 1.0f, 2.0f));
-                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + timerValue + ChatColor.RESET + " seconds until the match begins");
+                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + countDownTimerValue + ChatColor.RESET + " seconds until the match begins");
                     break;
                 case 0:
+                    fillSpawn(plugin.getServer().getWorlds().get(0), Material.AIR);
                     plugin.getServer().getWorlds().get(0).getPlayers().forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_PLING, 2.0f, 2.0f));
-                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " PVP will activate in 15 minutes!");
-                    plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(300);
+                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " You are invulnerable for one minute. PVP will activate in 15 minutes!");
+                    plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(300, 10);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                         plugin.getServer().getWorlds().get(0).setPVP(true);
                         plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
                         plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(20, 10*60);
                     }, 15*60*20);
-                    plugin.getServer().getScheduler().cancelTask(timerSchedule);
+                    plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
                     countdownStarted = false;
                     started = true;
                     break;
             }
-            timerValue--;
+            countDownTimerValue--;
         }, 0, 20);
     }
 
@@ -82,7 +84,7 @@ public class Game {
         if(countdownStarted){
             alivePlayers.remove(p);
             if(alivePlayers.size() < 2) {
-                plugin.getServer().getScheduler().cancelTask(timerSchedule);
+                plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
                 plugin.getServer().broadcastMessage(ChatColor.RED + "Start abort, not enough players!");
                 countdownStarted = false;
             }
@@ -93,7 +95,35 @@ public class Game {
         }
     }
 
-    public void checkForWinner(){
+    private void startMatch(){
+        matchTimerAddress = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, ()->{
+            switch(matchTimerValue){
+                case 0:
+                    //INIT
+                    break;
+                case 1*60:
+                    //MAKE PLAYERS VULNERABLE
+                    break;
+                case 5*60:
+                    //SHOW MESSAGE 10 MINUTES LEFT
+                    break;
+                case 10*60:
+                    //SHOW MESSAGE 5 MINUTES LEFT
+                    break;
+                case 14*60:
+                    //SHOW MESSAGE 1 MINUTE LEFT
+                    break;
+                case 15*60:
+                    //ENABLE PVP
+                    break;
+                case 30*60:
+                    //GIVE PLAYER A TRACKER AND BORDER SHRINKS
+                    break;
+            }
+        }, 0, 20);
+    }
+
+    private void checkForWinner(){
         if(alivePlayers.size() == 1){
             Player winner = alivePlayers.get(0);
             winner.sendMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "You won!");
@@ -119,6 +149,14 @@ public class Game {
         p.sendMessage(ChatColor.RED + "You where killed by " + damageCause + "!");
         if(alivePlayers.remove(p)){
             checkForWinner();
+        }
+    }
+
+    private void fillSpawn(World w, Material m){
+        for(int i = -11; i <= 11; i++){
+            for(int j = -11; j <= 11; j++){
+                new Location(w, i, 200, j).getBlock().setType(m);
+            }
         }
     }
 }
