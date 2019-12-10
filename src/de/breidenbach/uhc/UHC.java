@@ -8,7 +8,7 @@ import org.bukkit.util.Vector;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Game {
+public class UHC {
     public boolean active;
     public boolean countdownStarted;
     public boolean started;
@@ -21,7 +21,7 @@ public class Game {
     private int countDownTimerValue;
     private int matchTimerValue;
 
-    public Game(JavaPlugin plugin) {
+    public UHC(JavaPlugin plugin) {
         this.plugin = plugin;
         this.alivePlayers = new HashSet<>();
     }
@@ -99,29 +99,29 @@ public class Game {
                     countdownStarted = false;
                     started = true;
                     break;
-                case 30:
+                case 60:
                     //MAKE PLAYERS VULNERABLE
                     alivePlayers.forEach(p -> p.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "You are now vulnerable!"));
                     invulnerable = false;
                     break;
-                case 60:
-                case 90:
-                case 2 * 60:
+                case 5*60:
+                case 10*60:
+                case 14*60:
                     //SHOW MESSAGE 10/5/1 MINUTE(S) LEFT
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + (15 - matchTimerValue / 60) + ChatColor.RESET + " minute" + ((15 - matchTimerValue / 60) == 1 ? "" : "s") + " until PVP is enabled!");
                     break;
-                case 2 * 60 + 30:
+                case 15*60:
                     //ENABLE PVP
                     plugin.getServer().getWorlds().get(0).setPVP(true);
                     plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
                     break;
-                case 3 * 60:
-                case 3 * 60 + 20:
-                case 3 * 60 + 40:
+                case 20*60:
+                case 25*60:
+                case 29*60:
                     //SHOW BORDER TIMER
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + (30 - matchTimerValue / 60) + ChatColor.RESET + " minute" + ((30 - matchTimerValue / 60) == 1 ? "" : "s") + " until the border starts shrinking!");
                     break;
-                case 4 * 60:
+                case 30*60:
                     // START BORDER SHRINKING
                     plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "The border will now start shrinking!");
                     plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(50, 30 * 60);

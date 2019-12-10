@@ -1,9 +1,6 @@
 package de.breidenbach.uhc;
 
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,34 +9,27 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerListPingEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
-
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class EventListener implements Listener {
 
-    private Game game;
+    private UHC uhc;
 
-    public EventListener(Game game) {
-        this.game = game;
+    public EventListener(UHC uhc) {
+        this.uhc = uhc;
     }
 
     @EventHandler
     public void onServerListPing(ServerListPingEvent event) {
-        if (game.active) {
-            if (game.started) {
+        if (uhc.active) {
+            if (uhc.started) {
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " RUNNING" + ChatColor.RESET + " - " + ChatColor.BOLD + "Join now to spectate!");
             } else {
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " STARTING" + ChatColor.RESET + " - " + ChatColor.BOLD + "Join now to participate!");
             }
         } else {
-            if (game.finished) {
+            if (uhc.finished) {
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " FINISHED" + ChatColor.RESET + " - " + ChatColor.BOLD + "Please ask an operator to start a new game!");
             } else {
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " INITIALIZING" + ChatColor.RESET + " - " + ChatColor.BOLD + "Initializing, please wait...");
@@ -49,28 +39,28 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (game.active) {
-            game.handlePlayerJoin(event.getPlayer());
+        if (uhc.active) {
+            uhc.handlePlayerJoin(event.getPlayer());
         }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        if (game.active) {
-            game.handlePlayerLeave(event.getPlayer());
+        if (uhc.active) {
+            uhc.handlePlayerLeave(event.getPlayer());
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerDamage(EntityDamageEvent event) {
-        if (game.active) {
-            if (game.invulnerable && event.getEntityType() == EntityType.PLAYER) {
+        if (uhc.active) {
+            if (uhc.invulnerable && event.getEntityType() == EntityType.PLAYER) {
                 event.setCancelled(true);
             } else {
                 if (event.getEntityType() == EntityType.PLAYER) {
                     Player p = (Player) event.getEntity();
                     if (p.getHealth() - event.getDamage() <= 0) {
-                        game.killPlayer(p, event.getCause().name());
+                        uhc.killPlayer(p, event.getCause().name());
                         event.setCancelled(true);
                     }
                 }
@@ -80,8 +70,8 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onFoodLevelChange(FoodLevelChangeEvent event) {
-        if (game.active) {
-            if (!game.started) {
+        if (uhc.active) {
+            if (!uhc.started) {
                 event.setCancelled(true);
             }
         }
