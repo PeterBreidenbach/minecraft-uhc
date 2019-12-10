@@ -6,4 +6,4 @@ author: Peter Breidenbach
 commands:
   uhc:
     description: Set up the Server for a UHC match
-    usage: /<command> {start | setup}
+    usage: /<command> {start | setup| spawn}
