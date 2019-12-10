@@ -69,6 +69,10 @@ public class Game {
         p.teleport(new Location(p.getWorld(), 0, p.getWorld().getHighestBlockYAt(0,0),0));
         if(!started) {
             alivePlayers.add(p);
+            p.setFoodLevel(20);
+            p.setGameMode(GameMode.ADVENTURE);
+        }else{
+            p.setGameMode(GameMode.SPECTATOR);
         }
     }
 
@@ -92,36 +96,37 @@ public class Game {
             switch(matchTimerValue){
                 case 0:
                     fillSpawn(plugin.getServer().getWorlds().get(0), Material.AIR);
-                    plugin.getServer().getWorlds().get(0).getPlayers().forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_PLING, 2.0f, 2.0f));
+                    alivePlayers.forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_PLING, 2.0f, 2.0f));
+                    alivePlayers.forEach(p -> p.setGameMode(GameMode.SURVIVAL));
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " You are invulnerable for one minute. PVP will activate in 15 minutes!");
                     plugin.getServer().getWorlds().get(0).getWorldBorder().setSize((300+Math.log(alivePlayers.size()-1)*300), 10);
                     plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
                     countdownStarted = false;
                     started = true;
                     break;
-                case 60:
+                case 30:
                     //MAKE PLAYERS VULNERABLE
                     alivePlayers.forEach(p -> p.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "You are now vulnerable!"));
                     invulnerable = false;
                     break;
-                case 5*60:
-                case 10*60:
-                case 14*60:
+                case 60:
+                case 90:
+                case 2*60:
                     //SHOW MESSAGE 10/5/1 MINUTE(S) LEFT
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + (15 - matchTimerValue/60) + ChatColor.RESET + " minute" + ((15 - matchTimerValue/60) == 1 ? "" : "s") + " until PVP is enabled!");
                     break;
-                case 15*60:
+                case 2*60+30:
                     //ENABLE PVP
                     plugin.getServer().getWorlds().get(0).setPVP(true);
                     plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
                     break;
-                case 20*60:
-                case 25*60:
-                case 29*60:
+                case 3*60:
+                case 3*60+20:
+                case 3*60+40:
                     //SHOW BORDER TIMER
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + (30 - matchTimerValue/60) + ChatColor.RESET + " minute" + ((30 - matchTimerValue/60) == 1 ? "" : "s") + " until the border starts shrinking!");
                     break;
-                case 30*60:
+                case 4*60:
                     // START BORDER SHRINKING
                     plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "The border will now start shrinking!");
                     plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(50, 30*60);
@@ -162,8 +167,8 @@ public class Game {
     }
 
     private void fillSpawn(World w, Material m){
-        for(int i = -11; i <= 11; i++){
-            for(int j = -11; j <= 11; j++){
+        for(int i = -5; i <= 5; i++){
+            for(int j = -5; j <= 5; j++){
                 new Location(w, i, 200, j).getBlock().setType(m);
             }
         }

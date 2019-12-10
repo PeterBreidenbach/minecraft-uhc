@@ -64,7 +64,7 @@ public class EventListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerDamage(EntityDamageEvent event){
         if(game.active) {
-            if(game.invulnerable){
+            if(game.invulnerable && event.getEntityType() == EntityType.PLAYER){
                 event.setCancelled(true);
             }else{
                 if (event.getEntityType() == EntityType.PLAYER) {
