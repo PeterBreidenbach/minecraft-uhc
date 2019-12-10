@@ -94,7 +94,7 @@ public class Game {
                     fillSpawn(plugin.getServer().getWorlds().get(0), Material.AIR);
                     plugin.getServer().getWorlds().get(0).getPlayers().forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_PLING, 2.0f, 2.0f));
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " You are invulnerable for one minute. PVP will activate in 15 minutes!");
-                    plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(300, 10);
+                    plugin.getServer().getWorlds().get(0).getWorldBorder().setSize((300+Math.log(alivePlayers.size()-1)*300), 10);
                     plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
                     countdownStarted = false;
                     started = true;
