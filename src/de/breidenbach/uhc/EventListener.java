@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -63,7 +64,7 @@ public class EventListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerDamage(EntityDamageEvent event){
         if(game.active) {
-            if(!game.started){
+            if(game.invulnerable){
                 event.setCancelled(true);
             }else{
                 if (event.getEntityType() == EntityType.PLAYER) {
@@ -77,5 +78,13 @@ public class EventListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onFoodLevelChange(FoodLevelChangeEvent event){
+        if(game.active){
+            if(!game.started){
+                event.setCancelled(true);
+            }
+        }
+    }
 
 }

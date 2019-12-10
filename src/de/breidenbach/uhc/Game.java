@@ -15,6 +15,7 @@ public class Game {
     public boolean active;
     public boolean countdownStarted;
     public boolean started;
+    public boolean invulnerable;
     public boolean finished;
     public List<Player> alivePlayers;
     private JavaPlugin plugin;
@@ -35,6 +36,8 @@ public class Game {
         overworld.getWorldBorder().setSize(10);
         overworld.setPVP(false);
         plugin.getServer().setWhitelist(false);
+        plugin.getServer().getOnlinePlayers().forEach(p -> p.kickPlayer(ChatColor.RED + "" + ChatColor.BOLD + "UHC is now enabled!" + ChatColor.RESET + " Please rejoin to participate!"));
+        invulnerable = true;
         active = true;
     }
 
@@ -55,18 +58,7 @@ public class Game {
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + countDownTimerValue + ChatColor.RESET + " seconds until the match begins");
                     break;
                 case 0:
-                    fillSpawn(plugin.getServer().getWorlds().get(0), Material.AIR);
-                    plugin.getServer().getWorlds().get(0).getPlayers().forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_PLING, 2.0f, 2.0f));
-                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " You are invulnerable for one minute. PVP will activate in 15 minutes!");
-                    plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(300, 10);
-                    plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                        plugin.getServer().getWorlds().get(0).setPVP(true);
-                        plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
-                        plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(20, 10*60);
-                    }, 15*60*20);
-                    plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
-                    countdownStarted = false;
-                    started = true;
+                    startMatch();
                     break;
             }
             countDownTimerValue--;
@@ -99,27 +91,43 @@ public class Game {
         matchTimerAddress = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, ()->{
             switch(matchTimerValue){
                 case 0:
-                    //INIT
+                    fillSpawn(plugin.getServer().getWorlds().get(0), Material.AIR);
+                    plugin.getServer().getWorlds().get(0).getPlayers().forEach(p -> p.playSound(p.getLocation(), Sound.NOTE_PLING, 2.0f, 2.0f));
+                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " You are invulnerable for one minute. PVP will activate in 15 minutes!");
+                    plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(300, 10);
+                    plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
+                    countdownStarted = false;
+                    started = true;
                     break;
-                case 1*60:
+                case 60:
                     //MAKE PLAYERS VULNERABLE
+                    alivePlayers.forEach(p -> p.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "You are now vulnerable!"));
+                    invulnerable = false;
                     break;
                 case 5*60:
-                    //SHOW MESSAGE 10 MINUTES LEFT
-                    break;
                 case 10*60:
-                    //SHOW MESSAGE 5 MINUTES LEFT
-                    break;
                 case 14*60:
-                    //SHOW MESSAGE 1 MINUTE LEFT
+                    //SHOW MESSAGE 10/5/1 MINUTE(S) LEFT
+                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + (15 - matchTimerValue/60) + ChatColor.RESET + " minute" + ((15 - matchTimerValue/60) == 1 ? "" : "s") + " until PVP is enabled!");
                     break;
                 case 15*60:
                     //ENABLE PVP
+                    plugin.getServer().getWorlds().get(0).setPVP(true);
+                    plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
+                    break;
+                case 20*60:
+                case 25*60:
+                case 29*60:
+                    //SHOW BORDER TIMER
+                    plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + (30 - matchTimerValue/60) + ChatColor.RESET + " minute" + ((30 - matchTimerValue/60) == 1 ? "" : "s") + " until the border starts shrinking!");
                     break;
                 case 30*60:
-                    //GIVE PLAYER A TRACKER AND BORDER SHRINKS
+                    // START BORDER SHRINKING
+                    plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "The border will now start shrinking!");
+                    plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(50, 30*60);
                     break;
             }
+            matchTimerValue++;
         }, 0, 20);
     }
 
@@ -127,13 +135,14 @@ public class Game {
         if(alivePlayers.size() == 1){
             Player winner = alivePlayers.get(0);
             winner.sendMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "You won!");
-            for(Player p:winner.getWorld().getPlayers().stream().filter(i -> i != winner).collect(Collectors.toList())){
+            winner.getWorld().getPlayers().stream().filter(i -> i != winner).forEach(p -> {
                 p.sendMessage(ChatColor.BOLD + "" + ChatColor.GOLD + winner.getName() + " won!");
                 p.teleport(winner);
-            }
+            });
+            plugin.getServer().getScheduler().cancelTask(matchTimerAddress);
             finished = true;
-            winner.getServer().broadcastMessage(ChatColor.BOLD + "The Server will shutdown in 30 seconds!");
-            winner.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> winner.getServer().shutdown(),600);
+            plugin.getServer().broadcastMessage(ChatColor.BOLD + "The Server will shutdown in 30 seconds!");
+            plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> plugin.getServer().shutdown(),600);
         }
     }
 
