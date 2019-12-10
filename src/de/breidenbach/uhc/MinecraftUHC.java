@@ -11,16 +11,16 @@ public class MinecraftUHC extends JavaPlugin {
     private Game game;
 
     @Override
-    public void onEnable(){
+    public void onEnable() {
         game = new Game(this);
         this.getServer().getPluginManager().registerEvents(new EventListener(game), this);
         System.out.println("UHC " + VERSION + " enabled");
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
-        if(label.equalsIgnoreCase("uhc")){
-            if(sender.isOp()) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (label.equalsIgnoreCase("uhc")) {
+            if (sender.isOp()) {
                 if (args.length > 0) {
                     switch (args[0]) {
                         case "init":
@@ -29,18 +29,18 @@ public class MinecraftUHC extends JavaPlugin {
                             sender.sendMessage("Done.");
                             return true;
                         case "start":
-                            if(game.active) {
-                                if(!game.countdownStarted && !game.started) {
+                            if (game.active) {
+                                if (!game.countdownStarted && !game.started) {
                                     if (game.alivePlayers.size() > 1) {
                                         sender.sendMessage("Starting countdown...");
                                         game.start();
                                     } else {
                                         sender.sendMessage("At least 2 players are needed to start!");
                                     }
-                                }else{
+                                } else {
                                     sender.sendMessage("Game already started!");
                                 }
-                            }else{
+                            } else {
                                 sender.sendMessage("Please run \"/uhc init\" first!");
                             }
                             return true;
@@ -51,7 +51,7 @@ public class MinecraftUHC extends JavaPlugin {
                     sender.sendMessage("UHC " + VERSION + " loaded.");
                     return true;
                 }
-            }else{
+            } else {
                 sender.sendMessage(ChatColor.RED + "UHC-Settings can only be accessed by an operator!");
                 return true;
             }

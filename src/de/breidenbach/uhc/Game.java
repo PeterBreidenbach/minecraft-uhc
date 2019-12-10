@@ -63,7 +63,7 @@ public class Game {
     }
 
     public void handlePlayerJoin(Player p) {
-        p.teleport(new Location(p.getWorld(), 0, p.getWorld().getHighestBlockYAt(0, 0), 0));
+        p.teleport(new Location(p.getWorld(), 0, 201, 0));
         if (!started) {
             alivePlayers.add(p);
             p.setFoodLevel(20);
@@ -74,9 +74,9 @@ public class Game {
     }
 
     public void handlePlayerLeave(Player p) {
-        if (countdownStarted) {
+        if (!started) {
             alivePlayers.remove(p);
-            if (alivePlayers.size() < 2) {
+            if (countdownStarted && alivePlayers.size() < 2) {
                 plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
                 plugin.getServer().broadcastMessage(ChatColor.RED + "Start abort, not enough players!");
                 countdownStarted = false;
@@ -162,8 +162,8 @@ public class Game {
     }
 
     private void fillSpawn(World w, Material m) {
-        for (int i = -5; i <= 5; i++) {
-            for (int j = -5; j <= 5; j++) {
+        for (int i = -5; i < 5; i++) {
+            for (int j = -5; j < 5; j++) {
                 new Location(w, i, 200, j).getBlock().setType(m);
             }
         }

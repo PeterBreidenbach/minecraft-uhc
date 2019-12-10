@@ -31,14 +31,14 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void onServerListPing(ServerListPingEvent event){
-        if(game.active){
-            if(game.started){
-                event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " RUNNING" + ChatColor.RESET  + " - " + ChatColor.BOLD + "Join now to spectate!");
-            }else{
+    public void onServerListPing(ServerListPingEvent event) {
+        if (game.active) {
+            if (game.started) {
+                event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " RUNNING" + ChatColor.RESET + " - " + ChatColor.BOLD + "Join now to spectate!");
+            } else {
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " STARTING" + ChatColor.RESET + " - " + ChatColor.BOLD + "Join now to participate!");
             }
-        }else {
+        } else {
             if (game.finished) {
                 event.setMotd(ChatColor.RED + "UHC " + MinecraftUHC.VERSION + " FINISHED" + ChatColor.RESET + " - " + ChatColor.BOLD + "Please ask an operator to start a new game!");
             } else {
@@ -48,25 +48,25 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event){
-        if(game.active) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (game.active) {
             game.handlePlayerJoin(event.getPlayer());
         }
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event){
-        if(game.active) {
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (game.active) {
             game.handlePlayerLeave(event.getPlayer());
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerDamage(EntityDamageEvent event){
-        if(game.active) {
-            if(game.invulnerable && event.getEntityType() == EntityType.PLAYER){
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (game.active) {
+            if (game.invulnerable && event.getEntityType() == EntityType.PLAYER) {
                 event.setCancelled(true);
-            }else{
+            } else {
                 if (event.getEntityType() == EntityType.PLAYER) {
                     Player p = (Player) event.getEntity();
                     if (p.getHealth() - event.getDamage() <= 0) {
@@ -79,9 +79,9 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void onFoodLevelChange(FoodLevelChangeEvent event){
-        if(game.active){
-            if(!game.started){
+    public void onFoodLevelChange(FoodLevelChangeEvent event) {
+        if (game.active) {
+            if (!game.started) {
                 event.setCancelled(true);
             }
         }
