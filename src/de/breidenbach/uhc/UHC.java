@@ -19,6 +19,7 @@ public class UHC {
     public boolean finished;
     public HashSet<Player> alivePlayers;
     private JavaPlugin plugin;
+    private ChristmasChest christmasChest;
     private int countDownTimerAddress;
     private int matchTimerAddress;
     private int countDownTimerValue;
@@ -26,8 +27,9 @@ public class UHC {
     private int fireworkTimerAddress;
     private int fireworkTimerValue;
 
-    public UHC(JavaPlugin plugin) {
+    public UHC(JavaPlugin plugin, ChristmasChest christmasChest) {
         this.plugin = plugin;
+        this.christmasChest = christmasChest;
         this.alivePlayers = new HashSet<>();
     }
 
@@ -101,6 +103,7 @@ public class UHC {
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " You are invulnerable for one minute. PVP will activate in 15 minutes!");
                     plugin.getServer().getWorlds().get(0).getWorldBorder().setSize((300 + Math.log(alivePlayers.size() - 1) * 300), 10);
                     plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
+                    christmasChest.start(ChristmasChest.SPAWN_DELAY, ChristmasChest.SPAWN_INTERVAL);
                     countdownStarted = false;
                     started = true;
                     break;
@@ -109,24 +112,24 @@ public class UHC {
                     alivePlayers.forEach(p -> p.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "You are now vulnerable!"));
                     invulnerable = false;
                     break;
-                case 5*60:
-                case 10*60:
-                case 14*60:
+                case 5 * 60:
+                case 10 * 60:
+                case 14 * 60:
                     //SHOW MESSAGE 10/5/1 MINUTE(S) LEFT
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + (15 - matchTimerValue / 60) + ChatColor.RESET + " minute" + ((15 - matchTimerValue / 60) == 1 ? "" : "s") + " until PVP is enabled!");
                     break;
-                case 15*60:
+                case 15 * 60:
                     //ENABLE PVP
                     plugin.getServer().getWorlds().get(0).setPVP(true);
                     plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "PVP is now enabled!");
                     break;
-                case 20*60:
-                case 25*60:
-                case 29*60:
+                case 20 * 60:
+                case 25 * 60:
+                case 29 * 60:
                     //SHOW BORDER TIMER
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + (30 - matchTimerValue / 60) + ChatColor.RESET + " minute" + ((30 - matchTimerValue / 60) == 1 ? "" : "s") + " until the border starts shrinking!");
                     break;
-                case 30*60:
+                case 30 * 60:
                     // START BORDER SHRINKING
                     plugin.getServer().broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "The border will now start shrinking!");
                     plugin.getServer().getWorlds().get(0).getWorldBorder().setSize(50, 30 * 60);
@@ -138,6 +141,7 @@ public class UHC {
 
     private void checkForWinner() {
         if (alivePlayers.size() == 1) {
+            christmasChest.stop();
             Player winner = alivePlayers.toArray(new Player[0])[0];
             winner.sendMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "You won!");
             fireworkTimerAddress = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
@@ -147,7 +151,7 @@ public class UHC {
                 meta.addEffect(FireworkEffect.builder().withFlicker().withColor(Color.fromRGB((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256))).withFade(Color.fromRGB((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256))).build());
                 fw.setFireworkMeta(meta);
                 fireworkTimerValue++;
-                if(fireworkTimerValue == 10){
+                if (fireworkTimerValue == 10) {
                     plugin.getServer().getScheduler().cancelTask(fireworkTimerAddress);
                     plugin.getServer().broadcastMessage(ChatColor.BOLD + "The Server will shutdown in 30 seconds!");
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> plugin.getServer().shutdown(), 600);
@@ -171,10 +175,12 @@ public class UHC {
         p.getInventory().clear();
         p.setHealth(p.getMaxHealth());
         p.setSaturation(20);
-        p.getServer().getOnlinePlayers().stream().filter(i -> i != p && i != killer).forEach(x -> x.sendMessage(ChatColor.RED + p.getName() + " died!"));
-        p.sendMessage(ChatColor.RED + "You where killed"  + (Objects.nonNull(killer) ? " by " + ChatColor.YELLOW + killer.getDisplayName() + ChatColor.RESET + "!" : "!"));
-        killer.playSound(killer.getLocation(), Sound.LEVEL_UP, 2.0f, 2.0f);
-        killer.sendMessage("You killed " + ChatColor.BOLD + "" + ChatColor.YELLOW + p.getDisplayName() + ChatColor.RESET + "!");
+        p.getServer().getOnlinePlayers().stream().filter(i -> i != p && (!Objects.nonNull(killer) || i != killer)).forEach(x -> x.sendMessage(ChatColor.RED + p.getName() + " died!"));
+        p.sendMessage(ChatColor.RED + "You where killed" + (Objects.nonNull(killer) ? " by " + ChatColor.YELLOW + killer.getDisplayName() + ChatColor.RESET + "!" : "!"));
+        if (Objects.nonNull(killer)) {
+            killer.playSound(killer.getLocation(), Sound.LEVEL_UP, 2.0f, 2.0f);
+            killer.sendMessage("You killed " + ChatColor.BOLD + "" + ChatColor.YELLOW + p.getDisplayName() + ChatColor.RESET + "!");
+        }
         if (alivePlayers.remove(p)) {
             checkForWinner();
         }

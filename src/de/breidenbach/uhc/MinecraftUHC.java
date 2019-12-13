@@ -24,16 +24,16 @@ public class MinecraftUHC extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        uhc = new UHC(this);
+        christmasChest = new ChristmasChest(this);
+        uhc = new UHC(this, christmasChest);
         this.getServer().getPluginManager().registerEvents(new EventListener(uhc), this);
         this.getServer().getPluginManager().registerEvents(new PortableWorkbench(), this);
-        christmasChest = new ChristmasChest(this);
         this.getServer().getPluginManager().registerEvents(christmasChest, this);
         System.out.println("UHC " + VERSION + " enabled");
     }
 
     @Override
-    public void onDisable(){
+    public void onDisable() {
         christmasChest.cleanUp();
     }
 
@@ -100,11 +100,12 @@ public class MinecraftUHC extends JavaPlugin {
                             }
                             return true;
                         case "test":
-                            if(sender instanceof Player){
-                                Player p = (Player) sender;
-                                christmasChest.spawnLoot(p.getLocation());
-                            }else{
-                                sender.sendMessage("This command is only for players!");
+                            if (christmasChest.isSpawningActive()) {
+                                sender.sendMessage("Stopped chest spawning");
+                                christmasChest.stop();
+                            } else {
+                                sender.sendMessage("Started chest spawning");
+                                christmasChest.start(ChristmasChest.SPAWN_DELAY, ChristmasChest.SPAWN_INTERVAL);
                             }
                             return true;
                         default:

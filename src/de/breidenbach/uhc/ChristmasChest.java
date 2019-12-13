@@ -13,9 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ChristmasChest implements Listener {
 
@@ -47,16 +45,20 @@ public class ChristmasChest implements Listener {
 
     public void stop(){
         plugin.getServer().getScheduler().cancelTask(spawnTimerAddress);
+        activeChests.clear();
         spawningActive = false;
     }
 
     public void spawnLoot(Location spawnLocation) {
         spawnLocation = spawnLocation.getBlock().getLocation();
+        plugin.getServer().broadcastMessage(ChatColor.BOLD + "A chest spawned at " + ChatColor.GOLD + spawnLocation.getBlockX() + " " + spawnLocation.getBlockY() + " " + spawnLocation.getBlockZ());
         activeChests.add(spawnLocation);
-        ItemStack[] loot = ChristmasLoot.generateLoot(LOOT_VALUE);
         plugin.getServer().getWorlds().get(0).getBlockAt(spawnLocation).setType(Material.CHEST);
-        Chest chest = (Chest) plugin.getServer().getWorlds().get(0).getBlockAt(spawnLocation).getState();
-        chest.getInventory().setContents(loot);
+        Chest chest = (Chest) spawnLocation.getBlock().getState();
+        ArrayList<ItemStack> chestFilling = new ArrayList<>(Arrays.asList(ChristmasLoot.generateLoot(LOOT_VALUE)));
+        chestFilling.addAll(Arrays.asList(new ItemStack[chest.getInventory().getSize()-chestFilling.size()]));
+        Collections.shuffle(chestFilling);
+        chest.getInventory().setContents(chestFilling.toArray(new ItemStack[0]));
     }
 
     @EventHandler
@@ -82,5 +84,9 @@ public class ChristmasChest implements Listener {
             stop();
         }
         plugin.getServer().getScheduler().cancelTask(fireworkTimerAddress);
+    }
+
+    public boolean isSpawningActive() {
+        return spawningActive;
     }
 }
