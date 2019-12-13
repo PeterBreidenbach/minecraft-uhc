@@ -1,12 +1,10 @@
 package de.breidenbach.uhc;
 
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityInteractEvent;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ArrayList;
@@ -21,7 +19,7 @@ public class PortableWorkbench implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event){
-        if(Objects.nonNull(event.getItem()) && event.getItem().getType() == Material.WORKBENCH && Objects.nonNull(event.getItem().getItemMeta().getLore()) && event.getItem().getItemMeta().getLore().get(0).equals(LORE.get(0))){
+        if((event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) && Objects.nonNull(event.getItem()) && event.getItem().getType() == Material.WORKBENCH && Objects.nonNull(event.getItem().getItemMeta().getLore()) && event.getItem().getItemMeta().getLore().get(0).equals(LORE.get(0))){
             event.getPlayer().openWorkbench(null, true);
             event.setCancelled(true);
         }

@@ -2,11 +2,11 @@ package de.breidenbach.uhc;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.Potion;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
 import java.util.*;
@@ -17,9 +17,9 @@ public enum ChristmasLoot {
     IRON(Material.IRON_INGOT, 10, 20, 5),
     GOLD(Material.GOLD_INGOT, 5, 10, 10),
     DIAMONDS(Material.DIAMOND, 2, 5, 50),
-    SHARPNESS(Enchantment.DAMAGE_ALL, 1, 1, 1, 100),
-    PROTECTION(Enchantment.PROTECTION_ENVIRONMENTAL, 1, 1, 1, 100),
-    POWER(Enchantment.ARROW_DAMAGE, 1, 1, 1, 100),
+    SHARPNESS(Enchantment.DAMAGE_ALL, 2, 1, 1, 100),
+    PROTECTION(Enchantment.PROTECTION_ENVIRONMENTAL, 2, 1, 1, 100),
+    POWER(Enchantment.ARROW_DAMAGE, 1, 2, 1, 100),
     TNT(Material.TNT, 3, 6, 5),
     OBSIDIAN(Material.OBSIDIAN, 3, 6, 10),
     COOKED_BEEF(Material.COOKED_BEEF, 16, 32, 1),
@@ -29,7 +29,7 @@ public enum ChristmasLoot {
     ARROWS(Material.ARROW, 20, 40, 3),
     COBWEB(Material.WEB, 1, 3, 40),
     XP(Material.EXP_BOTTLE, 5, 10, 15),
-    ;
+    PORTABLE_WORKBENCH(Material.WORKBENCH, 1, 1, 100);
 
     private Material material;
     private int minCount;
@@ -93,13 +93,21 @@ public enum ChristmasLoot {
                     case POTION:
                         generatedLoot.add(new Potion(currentLoot.potionType, currentLoot.duration, currentLoot.splash).toItemStack(count));
                         break;
+                    case WORKBENCH:
+                        ItemStack portableWorkbench = new ItemStack(Material.WORKBENCH, 1);
+                        ItemMeta im = portableWorkbench.getItemMeta();
+                        im.setLore(PortableWorkbench.LORE);
+                        im.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        im.addEnchant(Enchantment.ARROW_INFINITE, 1, false);
+                        portableWorkbench.setItemMeta(im);
+                        generatedLoot.add(portableWorkbench);
+                        break;
                     default:
                         generatedLoot.add(new ItemStack(currentLoot.material, count));
                 }
                 value += count*currentLoot.valuePerItem;
             }
         }
-        System.out.println("Value: " + value);
         return generatedLoot.toArray(new ItemStack[0]);
     }
 }

@@ -1,11 +1,13 @@
 package de.breidenbach.uhc;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -60,7 +62,7 @@ public class EventListener implements Listener {
                 if (event.getEntityType() == EntityType.PLAYER) {
                     Player p = (Player) event.getEntity();
                     if (p.getHealth() - event.getDamage() <= 0) {
-                        uhc.killPlayer(p, event.getCause().name());
+                        uhc.killPlayer(p, ((Player) event.getEntity()).getKiller());
                         event.setCancelled(true);
                     }
                 }
@@ -70,10 +72,16 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onFoodLevelChange(FoodLevelChangeEvent event) {
-        if (uhc.active) {
-            if (!uhc.started) {
-                event.setCancelled(true);
-            }
+        if (uhc.active && !uhc.started) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event){
+        if(uhc.active && event.getBlock().getType() == Material.TNT){
+            event.getBlock().setType(Material.AIR);
+            event.getBlock().getLocation().getWorld().spawnEntity(event.getBlock().getLocation(), EntityType.PRIMED_TNT);
         }
     }
 

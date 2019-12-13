@@ -1,25 +1,20 @@
 package de.breidenbach.uhc;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.Potion;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
 
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class MinecraftUHC extends JavaPlugin {
 
@@ -79,16 +74,13 @@ public class MinecraftUHC extends JavaPlugin {
                                 if (args.length == 2) {
                                     try {
                                         int value = Integer.parseInt(args[1]);
-                                        ItemStack[] loot = ChristmasLoot.generateLoot(value);
                                         Player p = (Player) sender;
                                         Inventory chestView = Bukkit.createInventory(p, InventoryType.CHEST);
-                                        chestView.setContents(loot);
+                                        ArrayList<ItemStack> chestFilling = new ArrayList<>(Arrays.asList(ChristmasLoot.generateLoot(value)));
+                                        chestFilling.addAll(Arrays.asList(new ItemStack[chestView.getSize()-chestFilling.size()]));
+                                        Collections.shuffle(chestFilling);
+                                        chestView.setContents(chestFilling.toArray(new ItemStack[0]));
                                         p.openInventory(chestView);
-                                        ItemStack portableWorkbench = new ItemStack(Material.WORKBENCH, 1);
-                                        ItemMeta im = portableWorkbench.getItemMeta();
-                                        im.setLore(PortableWorkbench.LORE);
-                                        portableWorkbench.setItemMeta(im);
-                                        p.getWorld().dropItem(p.getLocation(), portableWorkbench);
                                     } catch (NumberFormatException e) {
                                         return false;
                                     }

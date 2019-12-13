@@ -1,12 +1,15 @@
 package de.breidenbach.uhc;
 
 import org.bukkit.*;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
 
 public class UHC {
     public boolean active;
@@ -82,7 +85,7 @@ public class UHC {
                 countdownStarted = false;
             }
         } else {
-            killPlayer(p, "leaving");
+            killPlayer(p, null);
         }
     }
 
@@ -138,6 +141,8 @@ public class UHC {
             winner.getWorld().getPlayers().stream().filter(i -> i != winner).forEach(p -> {
                 p.sendMessage(ChatColor.BOLD + "" + ChatColor.GOLD + winner.getName() + " won!");
                 p.teleport(winner);
+                Firework fw = winner.getWorld().spawn(winner.getLocation(), Firework.class);
+                FireworkMeta meta = fw.getFireworkMeta();
             });
             plugin.getServer().getScheduler().cancelTask(matchTimerAddress);
             finished = true;
@@ -146,7 +151,7 @@ public class UHC {
         }
     }
 
-    public void killPlayer(Player p, String damageCause) {
+    public void killPlayer(Player p, Player killer) {
         p.getWorld().strikeLightningEffect(p.getLocation());
         Arrays.stream(p.getInventory().getContents()).filter(s -> Objects.nonNull(s) && s.getType() != Material.AIR).forEach(x -> p.getWorld().dropItemNaturally(p.getLocation(), x));
         Arrays.stream(p.getInventory().getArmorContents()).filter(s -> Objects.nonNull(s) && s.getType() != Material.AIR).forEach(x -> p.getWorld().dropItemNaturally(p.getLocation(), x));
@@ -154,8 +159,11 @@ public class UHC {
         p.setGameMode(GameMode.SPECTATOR);
         p.getInventory().clear();
         p.setHealth(p.getMaxHealth());
-        p.getServer().getOnlinePlayers().stream().filter(i -> i != p).forEach(x -> x.sendMessage(ChatColor.RED + p.getName() + " died!"));
-        p.sendMessage(ChatColor.RED + "You where killed by " + damageCause + "!");
+        p.setSaturation(20);
+        p.getServer().getOnlinePlayers().stream().filter(i -> i != p && i != killer).forEach(x -> x.sendMessage(ChatColor.RED + p.getName() + " died!"));
+        p.sendMessage(ChatColor.RED + "You where killed"  + (Objects.nonNull(killer) ? " by " + ChatColor.YELLOW + killer.getDisplayName() + ChatColor.RESET + "!" : "!"));
+        killer.playSound(killer.getLocation(), Sound.LEVEL_UP, 2.0f, 2.0f);
+        killer.sendMessage("You killed " + ChatColor.BOLD + "" + ChatColor.YELLOW + p.getDisplayName() + ChatColor.RESET + "!");
         if (alivePlayers.remove(p)) {
             checkForWinner();
         }
