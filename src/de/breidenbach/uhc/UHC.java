@@ -23,6 +23,8 @@ public class UHC {
     private int matchTimerAddress;
     private int countDownTimerValue;
     private int matchTimerValue;
+    private int fireworkTimerAddress;
+    private int fireworkTimerValue;
 
     public UHC(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -138,16 +140,25 @@ public class UHC {
         if (alivePlayers.size() == 1) {
             Player winner = alivePlayers.toArray(new Player[0])[0];
             winner.sendMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "You won!");
+            fireworkTimerAddress = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+                Firework fw = winner.getWorld().spawn(winner.getLocation(), Firework.class);
+                FireworkMeta meta = fw.getFireworkMeta();
+                meta.setPower(2);
+                meta.addEffect(FireworkEffect.builder().withFlicker().withColor(Color.fromRGB((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256))).withFade(Color.fromRGB((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256))).build());
+                fw.setFireworkMeta(meta);
+                fireworkTimerValue++;
+                if(fireworkTimerValue == 10){
+                    plugin.getServer().getScheduler().cancelTask(fireworkTimerAddress);
+                    plugin.getServer().broadcastMessage(ChatColor.BOLD + "The Server will shutdown in 30 seconds!");
+                    plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> plugin.getServer().shutdown(), 600);
+                }
+            }, 0, 5);
             winner.getWorld().getPlayers().stream().filter(i -> i != winner).forEach(p -> {
                 p.sendMessage(ChatColor.BOLD + "" + ChatColor.GOLD + winner.getName() + " won!");
                 p.teleport(winner);
-                Firework fw = winner.getWorld().spawn(winner.getLocation(), Firework.class);
-                FireworkMeta meta = fw.getFireworkMeta();
             });
             plugin.getServer().getScheduler().cancelTask(matchTimerAddress);
             finished = true;
-            plugin.getServer().broadcastMessage(ChatColor.BOLD + "The Server will shutdown in 30 seconds!");
-            plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> plugin.getServer().shutdown(), 600);
         }
     }
 

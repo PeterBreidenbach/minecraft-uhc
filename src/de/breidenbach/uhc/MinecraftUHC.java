@@ -1,15 +1,15 @@
 package de.breidenbach.uhc;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import javafx.print.PageLayout;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -20,13 +20,21 @@ public class MinecraftUHC extends JavaPlugin {
 
     public static final String VERSION = "1.0";
     private UHC uhc;
+    private ChristmasChest christmasChest;
 
     @Override
     public void onEnable() {
         uhc = new UHC(this);
         this.getServer().getPluginManager().registerEvents(new EventListener(uhc), this);
         this.getServer().getPluginManager().registerEvents(new PortableWorkbench(), this);
+        christmasChest = new ChristmasChest(this);
+        this.getServer().getPluginManager().registerEvents(christmasChest, this);
         System.out.println("UHC " + VERSION + " enabled");
+    }
+
+    @Override
+    public void onDisable(){
+        christmasChest.cleanUp();
     }
 
     @Override
@@ -77,7 +85,7 @@ public class MinecraftUHC extends JavaPlugin {
                                         Player p = (Player) sender;
                                         Inventory chestView = Bukkit.createInventory(p, InventoryType.CHEST);
                                         ArrayList<ItemStack> chestFilling = new ArrayList<>(Arrays.asList(ChristmasLoot.generateLoot(value)));
-                                        chestFilling.addAll(Arrays.asList(new ItemStack[chestView.getSize()-chestFilling.size()]));
+                                        chestFilling.addAll(Arrays.asList(new ItemStack[chestView.getSize() - chestFilling.size()]));
                                         Collections.shuffle(chestFilling);
                                         chestView.setContents(chestFilling.toArray(new ItemStack[0]));
                                         p.openInventory(chestView);
@@ -88,6 +96,14 @@ public class MinecraftUHC extends JavaPlugin {
                                     return false;
                                 }
                             } else {
+                                sender.sendMessage("This command is only for players!");
+                            }
+                            return true;
+                        case "test":
+                            if(sender instanceof Player){
+                                Player p = (Player) sender;
+                                christmasChest.spawnLoot(p.getLocation());
+                            }else{
                                 sender.sendMessage("This command is only for players!");
                             }
                             return true;
