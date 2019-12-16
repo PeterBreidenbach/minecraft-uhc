@@ -74,6 +74,9 @@ public class UHC {
         if (!started) {
             alivePlayers.add(p);
             p.setFoodLevel(20);
+            p.getInventory().clear();
+            p.setTotalExperience(0);
+            p.setExp(0);
             p.setGameMode(GameMode.ADVENTURE);
         } else {
             p.setGameMode(GameMode.SPECTATOR);
@@ -102,6 +105,7 @@ public class UHC {
                     alivePlayers.forEach(p -> p.setGameMode(GameMode.SURVIVAL));
                     plugin.getServer().broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Match started!" + ChatColor.RESET + " You are invulnerable for one minute. PVP will activate in 15 minutes!");
                     plugin.getServer().getWorlds().get(0).getWorldBorder().setSize((300 + Math.log(alivePlayers.size() - 1) * 300), 10);
+                    plugin.getServer().getWorlds().get(0).setTime(1000);
                     plugin.getServer().getScheduler().cancelTask(countDownTimerAddress);
                     christmasChest.start(ChristmasChest.SPAWN_DELAY, ChristmasChest.SPAWN_INTERVAL);
                     countdownStarted = false;

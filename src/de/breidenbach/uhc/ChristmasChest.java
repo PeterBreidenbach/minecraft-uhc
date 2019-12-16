@@ -18,7 +18,7 @@ import java.util.*;
 public class ChristmasChest implements Listener {
 
     public static final int LOOT_VALUE = 500;
-    public static final int SPAWN_DELAY = 6000; //5 Minutes
+    public static final int SPAWN_DELAY = 18000; //15 Minutes
     public static final int SPAWN_INTERVAL = 12000; //10 Minutes
 
     private JavaPlugin plugin;
